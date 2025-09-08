@@ -20,8 +20,8 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const success = await login(username, password, true);
-      if (success) {
+      const result = await login(username, password, true);
+      if (result.success) {
         toast({
           title: "Login successful",
           description: "Welcome to admin dashboard"
@@ -30,7 +30,7 @@ const AdminLogin = () => {
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid admin credentials",
+          description: result.error || "Invalid admin credentials",
           variant: "destructive"
         });
       }

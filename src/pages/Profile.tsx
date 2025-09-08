@@ -24,6 +24,7 @@ const Profile = () => {
   const [regForm, setRegForm] = useState({
     name: '',
     email: '',
+    password: '',
     mobile: '',
     address: '',
     college: ''
@@ -44,8 +45,8 @@ const Profile = () => {
     setLoading(true);
     
     try {
-      const success = await login(loginEmail, loginPassword);
-      if (success) {
+      const result = await login(loginEmail, loginPassword);
+      if (result.success) {
         toast({
           title: "Login successful",
           description: "Welcome back!"
@@ -54,7 +55,7 @@ const Profile = () => {
       } else {
         toast({
           title: "Login failed",
-          description: "Invalid credentials",
+          description: result.error || "Invalid credentials",
           variant: "destructive"
         });
       }
@@ -74,13 +75,19 @@ const Profile = () => {
     setLoading(true);
     
     try {
-      const success = await register(regForm);
-      if (success) {
+      const result = await register(regForm);
+      if (result.success) {
         toast({
           title: "Registration successful",
-          description: "Welcome to A Vastraveda!"
+          description: "Please check your email to verify your account!"
         });
         navigate('/');
+      } else {
+        toast({
+          title: "Registration failed",
+          description: result.error || "Something went wrong",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({
@@ -251,6 +258,19 @@ const Profile = () => {
                         onChange={(e) => setRegForm({...regForm, email: e.target.value})}
                         required
                         className="glass-card"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="reg-password">Password</Label>
+                      <Input
+                        id="reg-password"
+                        type="password"
+                        value={regForm.password || ''}
+                        onChange={(e) => setRegForm({...regForm, password: e.target.value})}
+                        required
+                        className="glass-card"
+                        minLength={6}
                       />
                     </div>
                     
