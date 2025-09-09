@@ -11,9 +11,20 @@ interface ProductCardProps {
   image: string;
   available: boolean;
   hoverImage?: string;
+  color?: string;
+  price?: number;
 }
 
-export const ProductCard = ({ id, name, category, image, available, hoverImage }: ProductCardProps) => {
+export const ProductCard = ({ 
+  id, 
+  name, 
+  category, 
+  image, 
+  available, 
+  hoverImage,
+  color,
+  price 
+}: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -68,18 +79,29 @@ export const ProductCard = ({ id, name, category, image, available, hoverImage }
 
       {/* Product Info */}
       <div className="p-4">
-        <Badge 
-          variant="outline" 
-          className="mb-2 text-xs text-primary border-primary/30"
-        >
-          {category}
-        </Badge>
+        <div className="flex items-center gap-2 mb-2">
+          <Badge 
+            variant="outline" 
+            className="text-xs text-primary border-primary/30"
+          >
+            {category}
+          </Badge>
+          {color && (
+            <Badge variant="secondary" className="text-xs">
+              {color}
+            </Badge>
+          )}
+        </div>
+        
         <h3 className="font-display font-semibold text-foreground mb-2 line-clamp-2">
           {name}
         </h3>
-        <p className="text-sm text-muted-foreground mb-3">
-          Preview only
-        </p>
+        
+        {price && (
+          <p className="text-lg font-semibold text-primary mb-3">
+            ₹{price.toLocaleString()}
+          </p>
+        )}
         
         {/* View Product CTA - appears on hover */}
         <Link to={`/product/${id}`}>
