@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -9,77 +9,8 @@ import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Heart, Eye, ArrowLeft, Calendar as CalendarIcon, Clock } from 'lucide-react';
-
-// Import generated images
-import ghagra1 from '@/assets/ghagra-1.jpg';
-import ghagra2 from '@/assets/ghagra-2.jpg';
-import ghagra3 from '@/assets/ghagra-3.jpg';
-import jewelry1 from '@/assets/jewelry-1.jpg';
-import jewelry2 from '@/assets/jewelry-2.jpg';
-import jewelry3 from '@/assets/jewelry-3.jpg';
-
-const mockProducts = {
-  '1': {
-    id: '1',
-    name: 'Royal Golden Ghagra',
-    category: 'GHAGRA',
-    images: [ghagra1, ghagra1],
-    material: 'Silk with Zardozi work',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    available: true,
-    description: 'Exquisite royal golden ghagra with intricate zardozi embroidery'
-  },
-  '2': {
-    id: '2',
-    name: 'Traditional Red Lehenga',
-    category: 'GHAGRA',
-    images: [ghagra2, ghagra2],
-    material: 'Premium Silk with Gold Thread',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    available: true,
-    description: 'Traditional red lehenga with detailed embroidery work'
-  },
-  '3': {
-    id: '3',
-    name: 'Diamond Necklace Set',
-    category: 'JEWELLERY',
-    images: [jewelry1, jewelry1],
-    material: 'Sterling Silver with Diamonds',
-    sizes: ['One Size'],
-    available: false,
-    description: 'Elegant diamond necklace set with matching earrings'
-  },
-  '4': {
-    id: '4',
-    name: 'Emerald Earrings',
-    category: 'JEWELLERY',
-    images: [jewelry2, jewelry2],
-    material: 'Gold with Emerald Stones',
-    sizes: ['One Size'],
-    available: true,
-    description: 'Beautiful emerald drop earrings with gold setting'
-  },
-  '5': {
-    id: '5',
-    name: 'Silk Pink Ghagra',
-    category: 'GHAGRA',
-    images: [ghagra3, ghagra3],
-    material: 'Pure Silk with Rose Gold Thread',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    available: true,
-    description: 'Delicate silk pink ghagra with elegant embroidery'
-  },
-  '6': {
-    id: '6',
-    name: 'Pearl Bracelet',
-    category: 'JEWELLERY',
-    images: [jewelry3, jewelry3],
-    material: 'White Gold with Cultured Pearls',
-    sizes: ['One Size'],
-    available: true,
-    description: 'Elegant pearl bracelet with white gold setting'
-  }
-};
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/hooks/useProducts';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -89,11 +20,55 @@ const ProductDetail = () => {
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = mockProducts[id as keyof typeof mockProducts];
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="h-96 bg-muted rounded-lg animate-pulse" />
+        </main>
+      </div>
+    );
+  }
 
   if (!product) {
-    return <div className="min-h-screen bg-background text-foreground">Product not found</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <h1 className="text-2xl font-semibold text-foreground mb-4">Product Not Found</h1>
+            <Button onClick={() => navigate('/')}>Back to Gallery</Button>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   const handleBookingRequest = () => {
@@ -141,7 +116,7 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="relative group">
               <img
-                src={product.images[0]}
+                src={product.image_url}
                 alt={product.name}
                 className="w-full h-[600px] object-cover rounded-lg glass-card"
               />
@@ -171,22 +146,20 @@ const ProductDetail = () => {
               <h1 className="text-4xl font-display font-bold text-foreground mb-4">
                 {product.name}
               </h1>
-              <p className="text-muted-foreground text-lg mb-6">
-                {product.description}
-              </p>
-              
               <div className="space-y-4">
                 <div>
-                  <span className="font-semibold text-foreground">Material: </span>
-                  <span className="text-muted-foreground">{product.material}</span>
+                  <span className="font-semibold text-foreground">Price: </span>
+                  <span className="text-2xl font-bold text-primary">₹{product.price.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="font-semibold text-foreground">Available Sizes: </span>
-                  <div className="flex gap-2 mt-2">
-                    {product.sizes.map(size => (
-                      <Badge key={size} variant="secondary">{size}</Badge>
-                    ))}
-                  </div>
+                  <span className="font-semibold text-foreground">Color: </span>
+                  <Badge variant="secondary">{product.color}</Badge>
+                </div>
+                <div>
+                  <span className="font-semibold text-foreground">Availability: </span>
+                  <Badge variant={product.available ? "default" : "destructive"}>
+                    {product.available ? "Available" : "Currently Booked"}
+                  </Badge>
                 </div>
               </div>
             </div>
