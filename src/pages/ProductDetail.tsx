@@ -134,7 +134,7 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="relative group">
               <img
-                src={imageMap[product.image_url] || product.image_url}
+                src={imageMap[product.image_url] || product.image_url || '/placeholder.svg'}
                 alt={product.name}
                 className="w-full h-[600px] object-cover rounded-lg glass-card"
               />

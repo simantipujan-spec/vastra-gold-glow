@@ -55,7 +55,7 @@ export const ProductCard = ({
       <Link to={`/product/${id}`}>
         <div className="aspect-[4/5] overflow-hidden">
           <img
-            src={imageMap[isHovered && hoverImage ? hoverImage : image] || image}
+            src={imageMap[isHovered && hoverImage ? hoverImage : image] || imageMap[image] || '/placeholder.svg'}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
