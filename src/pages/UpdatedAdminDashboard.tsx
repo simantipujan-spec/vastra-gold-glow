@@ -58,8 +58,9 @@ const UpdatedAdminDashboard = () => {
     category: 'GHAGRA' as 'GHAGRA' | 'JEWELLERY',
     color: '',
     price: '',
-    imageFile: null as string | null
+    imageFile: null as File | null
   });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -182,8 +183,23 @@ const UpdatedAdminDashboard = () => {
     }
 
     try {
-      // Use the selected image filename for proper mapping
-      const imageUrl = productForm.imageFile;
+      setUploading(true);
+      
+      // Upload image to Supabase storage
+      const fileExt = productForm.imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `products/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, productForm.imageFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL for the uploaded image
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
       
       const { error } = await supabase
         .from('products')
@@ -192,7 +208,7 @@ const UpdatedAdminDashboard = () => {
           category: productForm.category,
           color: productForm.color,
           price: parseFloat(productForm.price),
-          image_url: imageUrl
+          image_url: publicUrl
         });
 
       if (error) throw error;
@@ -219,6 +235,8 @@ const UpdatedAdminDashboard = () => {
         description: 'Failed to upload product',
         variant: 'destructive'
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -413,28 +431,25 @@ const UpdatedAdminDashboard = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="image">Product Image</Label>
-                    <Select 
-                      value={productForm.imageFile || ''} 
-                      onValueChange={(value) => 
-                        setProductForm({...productForm, imageFile: value})
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an image" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ghagra-1.jpg">Ghagra 1</SelectItem>
-                        <SelectItem value="ghagra-2.jpg">Ghagra 2</SelectItem>
-                        <SelectItem value="ghagra-3.jpg">Ghagra 3</SelectItem>
-                        <SelectItem value="jewelry-1.jpg">Jewelry 1</SelectItem>
-                        <SelectItem value="jewelry-2.jpg">Jewelry 2</SelectItem>
-                        <SelectItem value="jewelry-3.jpg">Jewelry 3</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setProductForm({
+                        ...productForm, 
+                        imageFile: e.target.files?.[0] || null
+                      })}
+                      required
+                    />
+                    {productForm.imageFile && (
+                      <p className="text-sm text-muted-foreground">
+                        Selected: {productForm.imageFile.name}
+                      </p>
+                    )}
                   </div>
                   
-                  <Button type="submit" className="w-full">
-                    Upload Product
+                  <Button type="submit" className="w-full" disabled={uploading}>
+                    {uploading ? 'Uploading...' : 'Upload Product'}
                   </Button>
                 </form>
               </CardContent>
