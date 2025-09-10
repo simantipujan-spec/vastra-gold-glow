@@ -12,6 +12,24 @@ import { Heart, Eye, ArrowLeft, Calendar as CalendarIcon, Clock } from 'lucide-r
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/hooks/useProducts';
 
+// Import generated images
+import ghagra1 from '@/assets/ghagra-1.jpg';
+import ghagra2 from '@/assets/ghagra-2.jpg';
+import ghagra3 from '@/assets/ghagra-3.jpg';
+import jewelry1 from '@/assets/jewelry-1.jpg';
+import jewelry2 from '@/assets/jewelry-2.jpg';
+import jewelry3 from '@/assets/jewelry-3.jpg';
+
+// Image mapping for proper display
+const imageMap: Record<string, string> = {
+  'ghagra-1.jpg': ghagra1,
+  'ghagra-2.jpg': ghagra2,
+  'ghagra-3.jpg': ghagra3,
+  'jewelry-1.jpg': jewelry1,
+  'jewelry-2.jpg': jewelry2,
+  'jewelry-3.jpg': jewelry3,
+};
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,7 +53,7 @@ const ProductDetail = () => {
           .single();
 
         if (error) throw error;
-        setProduct(data);
+        setProduct(data as Product);
       } catch (error) {
         console.error('Error fetching product:', error);
       } finally {
@@ -116,7 +134,7 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="relative group">
               <img
-                src={product.image_url}
+                src={imageMap[product.image_url] || product.image_url}
                 alt={product.name}
                 className="w-full h-[600px] object-cover rounded-lg glass-card"
               />

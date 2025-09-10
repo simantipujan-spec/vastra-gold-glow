@@ -4,6 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Eye } from 'lucide-react';
 
+// Import generated images
+import ghagra1 from '@/assets/ghagra-1.jpg';
+import ghagra2 from '@/assets/ghagra-2.jpg';
+import ghagra3 from '@/assets/ghagra-3.jpg';
+import jewelry1 from '@/assets/jewelry-1.jpg';
+import jewelry2 from '@/assets/jewelry-2.jpg';
+import jewelry3 from '@/assets/jewelry-3.jpg';
+
+// Image mapping for proper display
+const imageMap: Record<string, string> = {
+  'ghagra-1.jpg': ghagra1,
+  'ghagra-2.jpg': ghagra2,
+  'ghagra-3.jpg': ghagra3,
+  'jewelry-1.jpg': jewelry1,
+  'jewelry-2.jpg': jewelry2,
+  'jewelry-3.jpg': jewelry3,
+};
+
 interface ProductCardProps {
   id: string;
   name: string;
@@ -37,7 +55,7 @@ export const ProductCard = ({
       <Link to={`/product/${id}`}>
         <div className="aspect-[4/5] overflow-hidden">
           <img
-            src={isHovered && hoverImage ? hoverImage : image}
+            src={imageMap[isHovered && hoverImage ? hoverImage : image] || image}
             alt={name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
