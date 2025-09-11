@@ -36,7 +36,6 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
@@ -109,9 +108,9 @@ const ProductDetail = () => {
       setShowLoginModal(true);
       return;
     }
-    if (!selectedDate || !selectedSlot) {
+    if (!selectedDate) {
       toast({
-        title: "Please select date and time slot",
+        title: "Please select a date",
         variant: "destructive"
       });
       return;
@@ -120,7 +119,7 @@ const ProductDetail = () => {
   };
 
   const confirmBooking = async () => {
-    if (!selectedDate || !selectedSlot || !user || !id) return;
+    if (!selectedDate || !user || !id) return;
 
     try {
       const { error } = await supabase
@@ -129,7 +128,7 @@ const ProductDetail = () => {
           user_id: user.id,
           product_id: id,
           booking_date: selectedDate.toISOString().split('T')[0],
-          time_slot: selectedSlot,
+          time_slot: 'Full Day',
           status: 'pending'
         });
 
@@ -152,7 +151,7 @@ const ProductDetail = () => {
     }
   };
 
-  const slots = ['Morning (9-12 PM)', 'Afternoon (12-5 PM)', 'Evening (5-8 PM)'];
+  
 
   return (
     <div className="min-h-screen bg-background">
@@ -255,37 +254,13 @@ const ProductDetail = () => {
                   />
                 </div>
 
-                {selectedDate && (
-                  <div>
-                    <label className="block text-sm font-medium mb-3 text-foreground">
-                      <Clock className="inline w-4 h-4 mr-2" />
-                      Select Time Slot
-                    </label>
-                    <div className="grid gap-2">
-                      {slots.map(slot => {
-                        const isSlotBooked = selectedDate ? isDateBooked(selectedDate, slot) : false;
-                        return (
-                          <Button
-                            key={slot}
-                            variant={selectedSlot === slot ? "default" : "outline"}
-                            onClick={() => setSelectedSlot(slot)}
-                            disabled={isSlotBooked}
-                            className={`justify-start ${isSlotBooked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            {slot} {isSlotBooked && '(Booked)'}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
                 <Button
                   variant="hero"
                   size="lg"
                   className="w-full"
                   onClick={handleBookingRequest}
-                  disabled={!selectedDate || !selectedSlot}
+                  disabled={!selectedDate}
                 >
                   Request Booking
                 </Button>
@@ -309,7 +284,6 @@ const ProductDetail = () => {
             <div className="space-y-2">
               <p><span className="font-semibold">Product:</span> {product.name}</p>
               <p><span className="font-semibold">Date:</span> {selectedDate?.toLocaleDateString()}</p>
-              <p><span className="font-semibold">Time:</span> {selectedSlot}</p>
               <p><span className="font-semibold">Contact:</span> {user?.name} ({user?.mobile})</p>
               <p><span className="font-semibold">College:</span> {user?.college}</p>
             </div>
