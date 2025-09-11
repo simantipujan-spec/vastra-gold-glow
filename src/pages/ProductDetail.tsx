@@ -45,6 +45,17 @@ const ProductDetail = () => {
   // Use booked dates hook
   const { bookedDates, isDateBooked, isDateFullyBooked } = useBookedDates(id || '');
 
+  // Booking window: 20 Sep – 10 Oct (dynamic per year)
+  const now = new Date();
+  let windowYear = now.getFullYear();
+  let startDate = new Date(windowYear, 8, 20); // Sep is month 8 (0-indexed)
+  let endDate = new Date(windowYear, 9, 10);   // Oct is month 9
+  if (now > endDate) {
+    windowYear += 1;
+    startDate = new Date(windowYear, 8, 20);
+    endDate = new Date(windowYear, 9, 10);
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
@@ -226,18 +237,16 @@ const ProductDetail = () => {
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    disabled={(date) => {
-                      const start = new Date(2024, 8, 20); // Sept 20
-                      const end = new Date(2024, 9, 10);   // Oct 10
-                      // Disable dates outside the allowed window or fully booked dates
-                      return date < start || date > end || isDateFullyBooked(date);
-                    }}
+                    defaultMonth={startDate}
+                    fromDate={startDate}
+                    toDate={endDate}
+                    disabled={(date) => date < startDate || date > endDate || isDateFullyBooked(date)}
                     modifiers={{
                       booked: (date) => isDateFullyBooked(date)
                     }}
                     modifiersStyles={{
-                      booked: { 
-                        backgroundColor: 'hsl(var(--destructive))', 
+                      booked: {
+                        backgroundColor: 'hsl(var(--destructive))',
                         color: 'hsl(var(--destructive-foreground))',
                         opacity: 0.6
                       }
