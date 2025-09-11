@@ -64,7 +64,7 @@ const ProductDetail = () => {
           .from('products')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setProduct(data as Product);
@@ -125,7 +125,7 @@ const ProductDetail = () => {
       const { error } = await supabase
         .from('bookings')
         .insert({
-          user_id: user.id,
+          user_id: user.user_id,
           product_id: id,
           booking_date: selectedDate.toISOString().split('T')[0],
           time_slot: 'Full Day',
