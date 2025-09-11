@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { Heart, Eye, ArrowLeft, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/hooks/useProducts';
+import { useBookedDates } from '@/hooks/useBookedDates';
 
 // Import generated images
 import ghagra1 from '@/assets/ghagra-1.jpg';
@@ -40,6 +41,9 @@ const ProductDetail = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Use booked dates hook
+  const { bookedDates, isDateBooked, isDateFullyBooked } = useBookedDates(id || '');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -104,13 +108,37 @@ const ProductDetail = () => {
     setShowBookingModal(true);
   };
 
-  const confirmBooking = () => {
-    toast({
-      title: "Booking request sent",
-      description: "You'll receive confirmation after admin approval."
-    });
-    setShowBookingModal(false);
-    navigate('/my-bookings');
+  const confirmBooking = async () => {
+    if (!selectedDate || !selectedSlot || !user || !id) return;
+
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .insert({
+          user_id: user.id,
+          product_id: id,
+          booking_date: selectedDate.toISOString().split('T')[0],
+          time_slot: selectedSlot,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Booking request sent",
+        description: "You'll receive confirmation after admin approval."
+      });
+      
+      setShowBookingModal(false);
+      navigate('/my-bookings');
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit booking request",
+        variant: "destructive"
+      });
+    }
   };
 
   const slots = ['Morning (9-12 PM)', 'Afternoon (12-5 PM)', 'Evening (5-8 PM)'];
@@ -201,7 +229,18 @@ const ProductDetail = () => {
                     disabled={(date) => {
                       const start = new Date(2024, 8, 20); // Sept 20
                       const end = new Date(2024, 9, 10);   // Oct 10
-                      return date < start || date > end;
+                      // Disable dates outside the allowed window or fully booked dates
+                      return date < start || date > end || isDateFullyBooked(date);
+                    }}
+                    modifiers={{
+                      booked: (date) => isDateFullyBooked(date)
+                    }}
+                    modifiersStyles={{
+                      booked: { 
+                        backgroundColor: 'hsl(var(--destructive))', 
+                        color: 'hsl(var(--destructive-foreground))',
+                        opacity: 0.6
+                      }
                     }}
                     className="glass-card p-3 pointer-events-auto"
                   />
@@ -214,16 +253,20 @@ const ProductDetail = () => {
                       Select Time Slot
                     </label>
                     <div className="grid gap-2">
-                      {slots.map(slot => (
-                        <Button
-                          key={slot}
-                          variant={selectedSlot === slot ? "default" : "outline"}
-                          onClick={() => setSelectedSlot(slot)}
-                          className="justify-start"
-                        >
-                          {slot}
-                        </Button>
-                      ))}
+                      {slots.map(slot => {
+                        const isSlotBooked = selectedDate ? isDateBooked(selectedDate, slot) : false;
+                        return (
+                          <Button
+                            key={slot}
+                            variant={selectedSlot === slot ? "default" : "outline"}
+                            onClick={() => setSelectedSlot(slot)}
+                            disabled={isSlotBooked}
+                            className={`justify-start ${isSlotBooked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {slot} {isSlotBooked && '(Booked)'}
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

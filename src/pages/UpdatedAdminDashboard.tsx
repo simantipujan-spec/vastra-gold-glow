@@ -68,6 +68,42 @@ const UpdatedAdminDashboard = () => {
       return;
     }
     fetchData();
+    
+    // Set up real-time subscription for new bookings
+    const channel = supabase
+      .channel('booking-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'bookings'
+        },
+        (payload) => {
+          toast({
+            title: 'New Booking Request!',
+            description: 'A new booking request has been received.',
+            duration: 5000
+          });
+          fetchData(); // Refresh data
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings'
+        },
+        () => {
+          fetchData(); // Refresh data when bookings are updated
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isAdmin, navigate]);
 
   const fetchData = async () => {
