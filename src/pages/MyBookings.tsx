@@ -5,47 +5,98 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Calendar, Clock, MessageSquare, X } from 'lucide-react';
 
 interface UserBooking {
   id: string;
-  productName: string;
-  productImage: string;
-  date: string;
-  slot: string;
-  status: 'Pending' | 'Accepted' | 'Cancelled';
-  requestDate: string;
+  product_id: string;
+  booking_date: string;
+  time_slot: string;
+  status: 'pending' | 'accepted' | 'cancelled';
+  created_at: string;
+  products: {
+    name: string;
+    image_url: string;
+  } | null;
 }
 
 const MyBookings = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<UserBooking[]>([
-    {
-      id: '1',
-      productName: 'Royal Golden Ghagra',
-      productImage: '/api/placeholder/400/300',
-      date: '2024-09-25',
-      slot: 'Evening (5-8 PM)',
-      status: 'Pending',
-      requestDate: '2024-09-20'
-    }
-  ]);
+  const { toast } = useToast();
+  const [bookings, setBookings] = useState<UserBooking[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/profile');
+      return;
     }
-  }, [isAuthenticated, navigate]);
+    fetchBookings();
+  }, [isAuthenticated, navigate, user]);
 
-  const handleCancelBooking = (bookingId: string) => {
-    setBookings(prev => 
-      prev.map(booking => 
-        booking.id === bookingId 
-          ? { ...booking, status: 'Cancelled' as const }
-          : booking
-      )
-    );
+  const fetchBookings = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          products (
+            name,
+            image_url
+          )
+        `)
+        .eq('user_id', user.user_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setBookings((data as UserBooking[]) || []);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch your bookings",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      setBookings(prev => 
+        prev.map(booking => 
+          booking.id === bookingId 
+            ? { ...booking, status: 'cancelled' as const }
+            : booking
+        )
+      );
+
+      toast({
+        title: "Booking cancelled",
+        description: "Your booking has been cancelled successfully."
+      });
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel booking",
+        variant: "destructive"
+      });
+    }
   };
 
   if (!isAuthenticated) {
@@ -62,7 +113,12 @@ const MyBookings = () => {
             My Bookings
           </h1>
 
-          {bookings.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading your bookings...</p>
+            </div>
+          ) : bookings.length === 0 ? (
             <Card className="glass-card text-center p-12">
               <CardContent className="space-y-4">
                 <Calendar className="w-16 h-16 mx-auto text-muted-foreground" />
@@ -80,8 +136,8 @@ const MyBookings = () => {
                   <CardContent className="p-6">
                     <div className="flex gap-6">
                       <img
-                        src={booking.productImage}
-                        alt={booking.productName}
+                        src={booking.products?.image_url || '/placeholder.svg'}
+                        alt={booking.products?.name || 'Product'}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
                       
@@ -89,20 +145,20 @@ const MyBookings = () => {
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="text-xl font-display font-semibold text-foreground">
-                              {booking.productName}
+                              {booking.products?.name || 'Unknown Product'}
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              Requested on {new Date(booking.requestDate).toLocaleDateString()}
+                              Requested on {new Date(booking.created_at).toLocaleDateString()}
                             </p>
                           </div>
                           <Badge 
                             variant={
-                              booking.status === 'Accepted' ? 'default' : 
-                              booking.status === 'Pending' ? 'secondary' : 'destructive'
+                              booking.status === 'accepted' ? 'default' : 
+                              booking.status === 'pending' ? 'secondary' : 'destructive'
                             }
                             className={
-                              booking.status === 'Pending' ? 'bg-warning/20 text-warning border-warning/30' :
-                              booking.status === 'Accepted' ? 'bg-success/20 text-success border-success/30' :
+                              booking.status === 'pending' ? 'bg-warning/20 text-warning border-warning/30' :
+                              booking.status === 'accepted' ? 'bg-success/20 text-success border-success/30' :
                               'bg-destructive/20 text-destructive border-destructive/30'
                             }
                           >
@@ -113,11 +169,11 @@ const MyBookings = () => {
                         <div className="flex items-center gap-6 text-sm text-muted-foreground">
                           <span className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
-                            {new Date(booking.date).toLocaleDateString()}
+                            {new Date(booking.booking_date).toLocaleDateString()}
                           </span>
                           <span className="flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            {booking.slot}
+                            {booking.time_slot}
                           </span>
                         </div>
 
@@ -127,7 +183,7 @@ const MyBookings = () => {
                             Contact Admin
                           </Button>
                           
-                          {booking.status === 'Pending' && (
+                          {booking.status === 'pending' && (
                             <Button 
                               variant="outline" 
                               size="sm"
@@ -143,7 +199,7 @@ const MyBookings = () => {
                           </Button>
                         </div>
 
-                        {booking.status === 'Accepted' && (
+                        {booking.status === 'accepted' && (
                           <div className="mt-4 p-3 bg-success/10 border border-success/30 rounded-lg">
                             <p className="text-sm text-success font-medium">
                               ✓ Booking confirmed! Please arrive on time for your scheduled slot.

@@ -122,6 +122,7 @@ const ProductDetail = () => {
     if (!selectedDate || !user || !id) return;
 
     try {
+      console.log('Creating booking with user_id:', user.user_id);
       const { error } = await supabase
         .from('bookings')
         .insert({
@@ -132,7 +133,10 @@ const ProductDetail = () => {
           status: 'pending'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Booking insert error:', error);
+        throw error;
+      }
 
       toast({
         title: "Booking request sent",

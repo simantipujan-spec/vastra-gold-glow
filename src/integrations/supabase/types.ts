@@ -142,6 +142,7 @@ export type Database = {
           college: string | null
           created_at: string
           id: string
+          is_admin: boolean
           mobile: string | null
           name: string
           updated_at: string
@@ -152,6 +153,7 @@ export type Database = {
           college?: string | null
           created_at?: string
           id?: string
+          is_admin?: boolean
           mobile?: string | null
           name: string
           updated_at?: string
@@ -162,6 +164,7 @@ export type Database = {
           college?: string | null
           created_at?: string
           id?: string
+          is_admin?: boolean
           mobile?: string | null
           name?: string
           updated_at?: string
@@ -215,7 +218,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { uid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

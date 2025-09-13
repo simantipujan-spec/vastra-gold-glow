@@ -175,21 +175,7 @@ const UpdatedAdminDashboard = () => {
 
       if (error) throw error;
 
-      // If accepting booking, update product availability
-      if (action === 'accepted') {
-        const booking = bookings.find(b => b.id === bookingId);
-        if (booking) {
-          await supabase
-            .from('product_availability')
-            .upsert({
-              product_id: booking.product_id,
-              availability_date: booking.booking_date,
-              time_slot: booking.time_slot,
-              is_booked: true,
-              booking_id: bookingId
-            });
-        }
-      }
+      // The trigger will automatically handle availability syncing
 
       toast({
         title: 'Success',

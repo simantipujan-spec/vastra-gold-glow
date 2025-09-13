@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userWithProfile: User = {
           ...profile,
           email: authUser.email || '',
-          isAdmin: authUser.email === 'admin@vastraveda.com'
+          isAdmin: profile.is_admin || authUser.email === 'admin@vastraveda.com'
         };
         setUser(userWithProfile);
       }
