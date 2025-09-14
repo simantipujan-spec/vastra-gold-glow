@@ -110,40 +110,31 @@ const UpdatedAdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch bookings first
+      // Fetch bookings with user and product details using joins
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select('*')
+        .select(`
+          *,
+          profiles:profiles!bookings_user_id_fkey (
+            name,
+            college
+          ),
+          products:products!bookings_product_id_fkey (
+            name,
+            category,
+            color,
+            price
+          )
+        `)
         .order('created_at', { ascending: false });
 
-      if (bookingsError) throw bookingsError;
+      if (bookingsError) {
+        console.error('Error fetching bookings:', bookingsError);
+        throw bookingsError;
+      }
 
-      // Manually fetch user and product details for each booking
-      const enrichedBookings = await Promise.all(
-        (bookingsData || []).map(async (booking: any) => {
-          // Fetch user profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('name, college')
-            .eq('user_id', booking.user_id)
-            .single();
-
-          // Fetch product details
-          const { data: product } = await supabase
-            .from('products')
-            .select('name, category, color, price')
-            .eq('id', booking.product_id)
-            .single();
-
-          return {
-            ...booking,
-            profiles: profile,
-            products: product
-          };
-        })
-      );
-
-      setBookings(enrichedBookings as Booking[]);
+      console.log('Fetched bookings:', bookingsData);
+      setBookings((bookingsData as Booking[]) || []);
 
       // Fetch products
       const { data: productsData, error: productsError } = await supabase
