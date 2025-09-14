@@ -110,22 +110,10 @@ const UpdatedAdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch bookings with user and product details using joins
+      // Fetch bookings first - simple query without joins
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          profiles:profiles!bookings_user_id_fkey (
-            name,
-            college
-          ),
-          products:products!bookings_product_id_fkey (
-            name,
-            category,
-            color,
-            price
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (bookingsError) {
@@ -133,8 +121,43 @@ const UpdatedAdminDashboard = () => {
         throw bookingsError;
       }
 
-      console.log('Fetched bookings:', bookingsData);
-      setBookings((bookingsData as Booking[]) || []);
+      console.log('Raw bookings data:', bookingsData);
+
+      // Manually fetch user and product details for each booking
+      const enrichedBookings = await Promise.all(
+        (bookingsData || []).map(async (booking: any) => {
+          // Fetch user profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('name, college')
+            .eq('user_id', booking.user_id)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          }
+
+          // Fetch product details
+          const { data: product, error: productError } = await supabase
+            .from('products')
+            .select('name, category, color, price')
+            .eq('id', booking.product_id)
+            .maybeSingle();
+
+          if (productError) {
+            console.error('Error fetching product:', productError);
+          }
+
+          return {
+            ...booking,
+            profiles: profile || { name: 'Unknown User', college: 'Unknown' },
+            products: product || { name: 'Unknown Product', category: 'Unknown', color: 'Unknown', price: 0 }
+          };
+        })
+      );
+
+      console.log('Enriched bookings:', enrichedBookings);
+      setBookings(enrichedBookings as Booking[]);
 
       // Fetch products
       const { data: productsData, error: productsError } = await supabase
