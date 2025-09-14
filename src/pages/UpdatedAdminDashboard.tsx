@@ -30,6 +30,7 @@ interface Booking {
     category: string;
     color: string;
     price: number;
+    image_url: string;
   };
 }
 
@@ -39,6 +40,7 @@ interface Product {
   category: string;
   color: string;
   price: number;
+  image_url: string;
   available: boolean;
   created_at: string;
 }
@@ -140,7 +142,7 @@ const UpdatedAdminDashboard = () => {
           // Fetch product details
           const { data: product, error: productError } = await supabase
             .from('products')
-            .select('name, category, color, price')
+            .select('name, category, color, price, image_url')
             .eq('id', booking.product_id)
             .maybeSingle();
 
@@ -151,7 +153,7 @@ const UpdatedAdminDashboard = () => {
           return {
             ...booking,
             profiles: profile || { name: 'Unknown User', college: 'Unknown' },
-            products: product || { name: 'Unknown Product', category: 'Unknown', color: 'Unknown', price: 0 }
+            products: product || { name: 'Unknown Product', category: 'Unknown', color: 'Unknown', price: 0, image_url: '/placeholder.svg' }
           };
         })
       );
@@ -381,12 +383,27 @@ const UpdatedAdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 {bookings.filter(b => b.status === 'pending').slice(0, 5).map(booking => (
-                  <div key={booking.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div>
-                      <p className="font-medium">{booking.profiles?.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.products?.name} - {booking.booking_date}
-                      </p>
+                  <div key={booking.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img 
+                          src={booking.products?.image_url?.startsWith('http') ? booking.products.image_url : `/src/assets/${booking.products?.image_url}`} 
+                          alt={booking.products?.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium">{booking.profiles?.name || 'Unknown User'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {booking.products?.name} - {booking.booking_date}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {booking.profiles?.college || 'No college specified'}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" onClick={() => handleBookingAction(booking.id, 'accepted')}>
@@ -503,9 +520,9 @@ const UpdatedAdminDashboard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Product</TableHead>
                       <TableHead>Customer</TableHead>
                       <TableHead>College</TableHead>
-                      <TableHead>Product</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Time</TableHead>
                       <TableHead>Status</TableHead>
@@ -515,9 +532,26 @@ const UpdatedAdminDashboard = () => {
                   <TableBody>
                     {bookings.map(booking => (
                       <TableRow key={booking.id}>
-                        <TableCell className="font-medium">{booking.profiles?.name}</TableCell>
-                        <TableCell>{booking.profiles?.college}</TableCell>
-                        <TableCell>{booking.products?.name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                              <img 
+                                src={booking.products?.image_url?.startsWith('http') ? booking.products.image_url : `/src/assets/${booking.products?.image_url}`} 
+                                alt={booking.products?.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{booking.products?.name || 'Unknown Product'}</p>
+                              <p className="text-xs text-muted-foreground">₹{booking.products?.price?.toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{booking.profiles?.name || 'Unknown User'}</TableCell>
+                        <TableCell>{booking.profiles?.college || 'Not specified'}</TableCell>
                         <TableCell>{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
                         <TableCell>{booking.time_slot}</TableCell>
                         <TableCell>
