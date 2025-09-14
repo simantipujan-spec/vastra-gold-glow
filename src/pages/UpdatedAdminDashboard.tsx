@@ -128,6 +128,8 @@ const UpdatedAdminDashboard = () => {
       // Manually fetch user and product details for each booking
       const enrichedBookings = await Promise.all(
         (bookingsData || []).map(async (booking: any) => {
+          console.log('Processing booking for user_id:', booking.user_id);
+          
           // Fetch user profile
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -136,8 +138,9 @@ const UpdatedAdminDashboard = () => {
             .maybeSingle();
 
           if (profileError) {
-            console.error('Error fetching profile:', profileError);
+            console.error('Error fetching profile for user:', booking.user_id, profileError);
           }
+          console.log('Fetched profile:', profile);
 
           // Fetch product details
           const { data: product, error: productError } = await supabase
