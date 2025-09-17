@@ -11,6 +11,7 @@ import ghagra3 from '@/assets/ghagra-3.jpg';
 import jewelry1 from '@/assets/jewelry-1.jpg';
 import jewelry2 from '@/assets/jewelry-2.jpg';
 import jewelry3 from '@/assets/jewelry-3.jpg';
+import ghagra_yellow from '@/assets/ghagra_yellow.jpg'
 
 // Image mapping for proper display
 const imageMap: Record<string, string> = {
@@ -20,6 +21,7 @@ const imageMap: Record<string, string> = {
   'jewelry-1.jpg': jewelry1,
   'jewelry-2.jpg': jewelry2,
   'jewelry-3.jpg': jewelry3,
+  'ghagra_yellow': ghagra_yellow,
 };
 
 interface ProductCardProps {
