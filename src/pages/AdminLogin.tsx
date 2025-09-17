@@ -60,7 +60,7 @@ const AdminLogin = () => {
         <Card className="glass-card border-primary/30">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-display text-primary">
-              A Vastraveda
+              Vastraveda
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Admin Panel Access

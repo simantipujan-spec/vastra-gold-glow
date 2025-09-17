@@ -192,7 +192,7 @@ const Profile = () => {
           <Card className="glass-card">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-display text-primary">
-                A Vastraveda
+                Vastraveda
               </CardTitle>
               <CardDescription>
                 Sign in to your account or create a new one

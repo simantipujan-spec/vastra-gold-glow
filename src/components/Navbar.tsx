@@ -38,7 +38,7 @@ export const Navbar = () => {
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
               <Link to="/" className="text-xl font-display font-bold text-primary">
-                A Vastraveda
+                Vastraveda
               </Link>
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="icon">
@@ -156,7 +156,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="text-2xl font-display font-bold text-primary">
-            A Vastraveda
+            Vastraveda
           </Link>
 
           {/* Search Bar */}

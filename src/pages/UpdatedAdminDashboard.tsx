@@ -312,7 +312,7 @@ const UpdatedAdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-display font-bold text-primary">
-                A Vastraveda Admin
+                Vastraveda Admin
               </h1>
               <p className="text-muted-foreground">Welcome back, Admin</p>
             </div>

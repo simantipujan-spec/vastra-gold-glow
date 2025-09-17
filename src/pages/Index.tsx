@@ -47,15 +47,6 @@ const Index = () => {
         </section>
 
         {/* Admin Access Button */}
-        <section className="mt-16 text-center">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/admin'}
-            className="glass-card"
-          >
-            Login to Admin Panel
-          </Button>
-        </section>
       </main>
     </div>
   );

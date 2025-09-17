@@ -105,7 +105,7 @@ const AdminDashboard = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-display font-bold text-primary">A Vastraveda</h1>
+            <h1 className="text-2xl font-display font-bold text-primary">Vastraveda</h1>
             <p className="text-sm text-muted-foreground">Admin Dashboard</p>
           </div>
           <div className="flex items-center gap-4">
