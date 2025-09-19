@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Search, 
   User, 
   Heart, 
   Bell, 
@@ -22,13 +20,6 @@ export const Navbar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log('Search:', searchQuery);
-  };
 
   if (isMobile) {
     return (
@@ -123,13 +114,6 @@ export const Navbar = () => {
               <Home className="w-5 h-5" />
               Home
             </Link>
-            <Button 
-              variant="ghost" 
-              className="flex flex-col items-center gap-1 p-2 text-xs h-auto"
-            >
-              <Search className="w-5 h-5" />
-              Search
-            </Button>
             <Link 
               to={isAuthenticated ? "/my-bookings" : "/profile"} 
               className="flex flex-col items-center gap-1 p-2 text-xs text-muted-foreground hover:text-primary"
@@ -159,18 +143,6 @@ export const Navbar = () => {
             Vastraveda
           </Link>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-lg mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search ghagra, jewellery..."
-                className="pl-10 glass-card"
-              />
-            </div>
-          </form>
 
           {/* Navigation Icons */}
           <div className="flex items-center gap-4">

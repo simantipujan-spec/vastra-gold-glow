@@ -65,9 +65,6 @@ const AdminLogin = () => {
             <CardDescription className="text-muted-foreground">
               Admin Panel Access
             </CardDescription>
-            <div className="text-xs text-muted-foreground mt-4 p-2 bg-secondary rounded">
-              Demo credentials: mmkds / mruu
-            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -104,8 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string, isAdmin: boolean = false): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Admin credentials
-      if (isAdmin && email === 'mmkds' && password === 'mruu') {
+      // Admin login - use actual admin credentials
+      if (isAdmin) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: 'admin@vastraveda.com',
           password: 'admin123'
@@ -119,20 +119,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Regular user login
-      if (!isAdmin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-        if (error) {
-          return { success: false, error: error.message };
-        }
-
-        return { success: true };
+      if (error) {
+        return { success: false, error: error.message };
       }
 
-      return { success: false, error: 'Invalid credentials' };
+      return { success: true };
     } catch (error) {
       return { success: false, error: 'An unexpected error occurred' };
     }

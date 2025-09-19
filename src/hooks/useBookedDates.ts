@@ -75,8 +75,8 @@ export const useBookedDates = (productId: string) => {
     const bookedSlotsForDate = bookedDates.filter(
       booked => booked.date === dateString
     );
-    // Assuming 3 time slots per day
-    return bookedSlotsForDate.length >= 3;
+    // Consider the date unavailable if any slot is booked
+    return bookedSlotsForDate.length >= 1;
   };
 
   return { bookedDates, loading, isDateBooked, isDateFullyBooked };

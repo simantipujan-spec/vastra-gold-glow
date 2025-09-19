@@ -118,10 +118,10 @@ export const ProductGrid = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Prices</SelectItem>
-                    <SelectItem value="0-10000">₹0 - ₹10,000</SelectItem>
-                    <SelectItem value="10000-20000">₹10,000 - ₹20,000</SelectItem>
-                    <SelectItem value="20000-50000">₹20,000 - ₹50,000</SelectItem>
-                    <SelectItem value="50000-100000">₹50,000+</SelectItem>
+                    <SelectItem value="600-700">₹600 - ₹700</SelectItem>
+                    <SelectItem value="700-800">₹700 - ₹800</SelectItem>
+                    <SelectItem value="800-900">₹800 - ₹900</SelectItem>
+                    <SelectItem value="900-1000">₹900 - ₹1,000</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
